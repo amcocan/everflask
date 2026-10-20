@@ -1,0 +1,11 @@
+[package]
+name = "everflask-platform"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+everflask-core = { path = "../everflask-core" }
+
+[lints]
+workspace = true
