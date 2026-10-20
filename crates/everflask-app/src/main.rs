@@ -1,11 +1,12 @@
-//! SPIKE: menu-bar flask that toggles on double-click. Keep-awake is not
-//! wired up yet; this only proves the tray, gesture and icon swap.
+//! Menu-bar flask that keeps the machine awake while full. Double-click the
+//! icon (or use the right-click menu) to toggle.
 
 mod icon;
 
 use std::time::{Duration, Instant};
 
-use everflask_core::{DoubleClickDetector, State};
+use everflask_core::{DoubleClickDetector, KeepAwake, State};
+use everflask_platform::macos::MacKeepAwake;
 use tao::event::{Event, StartCause};
 use tao::event_loop::{ControlFlow, EventLoopBuilder};
 use tray_icon::menu::{Menu, MenuEvent, MenuItem};
@@ -52,6 +53,7 @@ fn main() {
     menu.append(&quit_item).expect("append menu item");
 
     let mut state = State::default();
+    let mut awake = MacKeepAwake::new();
     let mut clicks = DoubleClickDetector::new(DOUBLE_CLICK_WINDOW);
     let mut tray: Option<TrayIcon> = None;
 
@@ -85,6 +87,7 @@ fn main() {
             })) => toggle = true,
             Event::UserEvent(UserEvent::Menu(e)) if e.id == *toggle_item.id() => toggle = true,
             Event::UserEvent(UserEvent::Menu(e)) if e.id == *quit_item.id() => {
+                let _ = awake.disable();
                 tray.take();
                 *control_flow = ControlFlow::Exit;
             }
@@ -92,7 +95,17 @@ fn main() {
         }
 
         if toggle {
-            state = state.toggled();
+            let next = state.toggled();
+            let result = match next {
+                State::Full => awake.enable(),
+                State::Empty => awake.disable(),
+            };
+            // The icon must never claim the machine is awake when it isn't.
+            if let Err(e) = result {
+                eprintln!("everflask: could not switch to {next:?}: {e}");
+                return;
+            }
+            state = next;
             if let Some(tray) = &tray {
                 let _ = tray.set_icon_templated(Some(icon::flask(state)));
                 let _ = tray.set_tooltip(Some(tooltip(state)));
