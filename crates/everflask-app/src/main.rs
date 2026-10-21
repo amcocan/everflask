@@ -2,11 +2,13 @@
 //! icon (or use the right-click menu) to toggle.
 
 mod icon;
+mod menubar;
 
 use std::time::{Duration, Instant};
 
 use everflask_core::{DoubleClickDetector, KeepAwake, State};
 use everflask_platform::macos::MacKeepAwake;
+use icon::{Liquid, OffStyle};
 use tao::event::{Event, StartCause};
 use tao::event_loop::{ControlFlow, EventLoopBuilder};
 use tray_icon::menu::{Menu, MenuEvent, MenuItem};
@@ -14,6 +16,8 @@ use tray_icon::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIc
 
 /// Close to the macOS default; read the user's setting in a later pass.
 const DOUBLE_CLICK_WINDOW: Duration = Duration::from_millis(400);
+const LIQUID: Liquid = Liquid::Red;
+const OFF_STYLE: OffStyle = OffStyle::Grey;
 
 enum UserEvent {
     Tray(TrayIconEvent),
@@ -61,18 +65,19 @@ fn main() {
         *control_flow = ControlFlow::Wait;
 
         let mut toggle = false;
+        let mut redraw = false;
         match event {
             // macOS requires the status item to be created after the loop starts.
             Event::NewEvents(StartCause::Init) => {
                 tray = Some(
                     TrayIconBuilder::new()
-                        .with_icon_templated(icon::flask(state))
                         .with_tooltip(tooltip(state))
                         .with_menu(Box::new(menu.clone()))
                         .with_menu_on_left_click(false)
                         .build()
                         .expect("create tray icon"),
                 );
+                redraw = true;
             }
             Event::UserEvent(UserEvent::Tray(TrayIconEvent::Click {
                 button: MouseButton::Left,
@@ -106,11 +111,15 @@ fn main() {
                 return;
             }
             state = next;
+            redraw = true;
+            println!("everflask: {state:?}");
+        }
+
+        if redraw {
             if let Some(tray) = &tray {
-                let _ = tray.set_icon_templated(Some(icon::flask(state)));
+                menubar::set_flask(tray, icon::flask(state, LIQUID, OFF_STYLE));
                 let _ = tray.set_tooltip(Some(tooltip(state)));
             }
-            println!("everflask: {state:?}");
         }
     });
 }
