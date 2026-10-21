@@ -121,3 +121,60 @@ impl Drop for MacKeepAwake {
         let _ = self.release_all();
     }
 }
+
+// --- Activity simulation -------------------------------------------------
+//
+// The only input Everflask ever sends: a mouse-move event to the pointer's
+// current position. Nothing moves on screen, but macOS counts it as user
+// input, which resets the idle timers chat apps use for "Away".
+// Requires the Accessibility permission (System Settings > Privacy &
+// Security > Accessibility).
+
+use objc2_core_graphics::{
+    CGEvent, CGEventTapLocation, CGEventType, CGMouseButton, CGPreflightPostEventAccess,
+    CGRequestPostEventAccess,
+};
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ActivityError {
+    /// The Accessibility permission has not been granted (or was revoked).
+    NoPermission,
+    /// CoreGraphics could not create the event.
+    EventCreation,
+}
+
+impl fmt::Display for ActivityError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ActivityError::NoPermission => write!(f, "Accessibility permission not granted"),
+            ActivityError::EventCreation => write!(f, "could not create mouse event"),
+        }
+    }
+}
+
+impl std::error::Error for ActivityError {}
+
+/// Whether Everflask may post input events. Never prompts.
+pub fn has_activity_permission() -> bool {
+    CGPreflightPostEventAccess()
+}
+
+/// Asks macOS for the permission, showing the system prompt if it hasn't
+/// been decided yet. Returns whether it is granted right now; the user may
+/// still grant it later in System Settings.
+pub fn request_activity_permission() -> bool {
+    CGRequestPostEventAccess()
+}
+
+/// Posts one zero-distance mouse move at the pointer's current position.
+pub fn nudge_activity() -> Result<(), ActivityError> {
+    if !has_activity_permission() {
+        return Err(ActivityError::NoPermission);
+    }
+    // An empty event carries the pointer's current location.
+    let here = CGEvent::location(CGEvent::new(None).as_deref());
+    let event = CGEvent::new_mouse_event(None, CGEventType::MouseMoved, here, CGMouseButton::Left)
+        .ok_or(ActivityError::EventCreation)?;
+    CGEvent::post(CGEventTapLocation::HIDEventTap, Some(&event));
+    Ok(())
+}

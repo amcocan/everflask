@@ -359,6 +359,7 @@ version = "0.1.0"
 dependencies = [
  "core-foundation",
  "everflask-core",
+ "objc2-core-graphics",
 ]
 
 [[package]]
