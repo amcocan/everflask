@@ -1,3 +1,9 @@
+# Only check what we ship. Add the Windows/Linux targets when those ports
+# start; the Linux tray stack (GTK) currently pulls in two advisories
+# (RUSTSEC-2024-0370, RUSTSEC-2024-0429) to deal with then.
+[graph]
+targets = ["aarch64-apple-darwin", "x86_64-apple-darwin"]
+
 [advisories]
 yanked = "deny"
 

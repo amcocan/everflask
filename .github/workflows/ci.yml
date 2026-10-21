@@ -1,13 +1,37 @@
 name: CI
 on: [push, pull_request]
+
+# Least privilege: CI only needs to read the repo.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      # Actions pinned to full commit SHAs so a moved tag can't change what runs.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
           components: clippy, rustfmt
       - run: cargo fmt --check
-      - run: cargo clippy --workspace -- -D warnings
+      - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+
+  security:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+      - run: cargo install --locked cargo-audit cargo-deny
+      # Known advisories, on every target in Cargo.lock.
+      - run: cargo audit
+      # Licences, sources, bans and advisories for the targets we ship (deny.toml).
+      - run: cargo deny check

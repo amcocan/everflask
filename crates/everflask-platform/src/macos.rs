@@ -4,6 +4,8 @@
 
 use std::fmt;
 
+pub mod uninstall;
+
 use core_foundation::base::TCFType;
 use core_foundation::string::{CFString, CFStringRef};
 use everflask_core::KeepAwake;
@@ -131,8 +133,8 @@ impl Drop for MacKeepAwake {
 // Security > Accessibility).
 
 use objc2_core_graphics::{
-    CGEvent, CGEventTapLocation, CGEventType, CGMouseButton, CGPreflightPostEventAccess,
-    CGRequestPostEventAccess,
+    CGEvent, CGEventSource, CGEventSourceStateID, CGEventTapLocation, CGEventType, CGMouseButton,
+    CGPreflightPostEventAccess, CGRequestPostEventAccess,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -171,10 +173,24 @@ pub fn nudge_activity() -> Result<(), ActivityError> {
     if !has_activity_permission() {
         return Err(ActivityError::NoPermission);
     }
-    // An empty event carries the pointer's current location.
-    let here = CGEvent::location(CGEvent::new(None).as_deref());
+    // An empty event carries the pointer's current location. If it can't be
+    // created, give up: reading a location from no event yields (0, 0), and
+    // posting that would jump the pointer to the corner of the screen.
+    let probe = CGEvent::new(None).ok_or(ActivityError::EventCreation)?;
+    let here = CGEvent::location(Some(&probe));
     let event = CGEvent::new_mouse_event(None, CGEventType::MouseMoved, here, CGMouseButton::Left)
         .ok_or(ActivityError::EventCreation)?;
     CGEvent::post(CGEventTapLocation::HIDEventTap, Some(&event));
     Ok(())
+}
+
+/// Seconds since the last keyboard or mouse input from any source,
+/// including our own nudges. Needs no permission.
+pub fn seconds_since_input() -> f64 {
+    // kCGAnyInputEventType is defined as ~0.
+    let any_input = CGEventType(u32::MAX);
+    CGEventSource::seconds_since_last_event_type(
+        CGEventSourceStateID::CombinedSessionState,
+        any_input,
+    )
 }

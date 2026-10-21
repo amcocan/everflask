@@ -10,5 +10,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp packaging/macos/Info.plist "$APP/Contents/"
 cp target/debug/everflask "$APP/Contents/MacOS/"
-codesign --force --sign - "$APP"
+# Hardened runtime: MacOS ignores DYLD_* injection, so injected code
+# can never inherit the Accessibility grant.
+codesign --force --options runtime --sign - "$APP"
 echo "$APP"

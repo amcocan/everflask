@@ -93,6 +93,13 @@ impl Nudger {
     }
 }
 
+/// A nudge is only needed once the user has been idle for `threshold`.
+/// While they're actively using the machine, posting input is pointless and
+/// could interfere with what they're doing (e.g. mid-drag).
+pub fn needs_nudge(idle: Duration, threshold: Duration) -> bool {
+    idle >= threshold
+}
+
 /// Implemented per OS in `everflask-platform`; mocked in tests.
 pub trait KeepAwake {
     type Error: std::error::Error;
@@ -174,6 +181,15 @@ mod tests {
         n.stop();
         assert!(!n.is_running());
         assert!(!n.poll(t + EVERY));
+    }
+
+    #[test]
+    fn nudges_only_when_idle_long_enough() {
+        let threshold = Duration::from_secs(45);
+        assert!(!needs_nudge(Duration::from_secs(5), threshold));
+        assert!(!needs_nudge(Duration::from_secs(44), threshold));
+        assert!(needs_nudge(threshold, threshold));
+        assert!(needs_nudge(Duration::from_secs(300), threshold));
     }
 
     #[test]
