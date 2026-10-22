@@ -101,6 +101,15 @@ The keep-chat-apps-Active check is a manual test because it needs the Accessibil
 
     cargo test -p everflask-platform --test macos_activity -- --ignored
 
+## Releasing
+
+1. Update `version` in `Cargo.toml` and the CHANGELOG, then commit.
+2. Optional dry run: **Actions → Release → Run workflow** builds the DMG as a downloadable artifact without creating a release.
+3. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`. The tag must match the `Cargo.toml` version.
+4. The Release workflow builds the universal DMG and its `.sha256` and creates a **draft** release. Check it on GitHub, then click **Publish**.
+
+To build the same DMG locally: `./packaging/macos/build-release.sh` (output in `target/dist/`).
+
 ## Developing
 
 **Every rebuild of the dev bundle loses the Accessibility grant.** Dev builds are ad-hoc signed, so MacOS identifies them by a hash of their code, and each rebuild looks like a new app. `packaging/macos/dev-bundle.sh` therefore clears EverFlask's stale entry (and quits any running copy) on every build. After launching the new build, fill the flask and allow access, or use **Allow Accessibility** if MacOS doesn't prompt. It prompts only once per app; to see the prompt again, also clear MacOS's "warning shown" records with `sh packaging/macos/uninstall.sh` (this also removes the app's preferences), then rebuild. Signed releases don't lose the grant on update.

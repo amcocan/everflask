@@ -47,6 +47,6 @@ EverFlask ships without an Apple Developer ID signature or notarization (decided
 - The hardened runtime (T10) is still applied: ad-hoc signing supports it.
 
 ## Known gaps
-- Releases are unsigned by decision (above). The release build must still keep the hardened runtime (T10) and publish checksums and attestations.
+- Releases are unsigned by decision (above). `build-release.sh` enforces the hardened runtime (T10) and writes checksums; build attestations only start once the repository is public (GitHub limits them on private repos).
 - `cargo deny` checks only the Mac targets. The Linux tray stack (GTK) brings in RUSTSEC-2024-0370 (unmaintained) and RUSTSEC-2024-0429 (unsound); deal with them when the Linux port starts.
 - The manual activity test must run from a properly bundled, signed `.app` to validate TCC behaviour end to end.

@@ -1,0 +1,73 @@
+name: Release
+
+# Push a tag like v0.1.0 to build the DMG and create a DRAFT release; review
+# it on GitHub, then publish. "Run workflow" (manual) builds the DMG as a
+# downloadable workflow artifact without creating a release, as a dry run.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write # create the draft release
+      id-token: write # build attestations
+      attestations: write
+    steps:
+      # Actions pinned to full commit SHAs so a moved tag can't change what runs.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin, x86_64-apple-darwin
+
+      - name: Tag must match Cargo.toml version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match Cargo.toml version $version" >&2
+            exit 1
+          fi
+
+      - run: cargo test --workspace --locked
+      - run: ./packaging/macos/build-release.sh
+
+      # Lets users verify a download was built by this workflow from this repo:
+      #   gh attestation verify EverFlask-<version>.dmg -R amcocan/everflask
+      # GitHub only offers attestations for private repos on Enterprise plans,
+      # so this runs once the repository is public.
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        if: github.event.repository.visibility == 'public'
+        with:
+          subject-path: target/dist/*.dmg
+
+      - name: Create draft release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<'NOTES'
+          **EverFlask is unsigned** (no Apple Developer ID). The first time you open it, MacOS will warn you; see [Installing](https://github.com/${{ github.repository }}#installing) for the **Open Anyway** steps.
+
+          Verify your download: `shasum -a 256 -c EverFlask-*.dmg.sha256`
+
+          After updating, use **Allow Accessibility** again: each release counts as a new app for that permission.
+          NOTES
+          gh release create "$GITHUB_REF_NAME" target/dist/*.dmg target/dist/*.sha256 \
+            --draft --title "EverFlask $GITHUB_REF_NAME" --notes-file notes.md --generate-notes
+
+      - name: Upload DMG (manual dry run)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: EverFlask-dmg
+          path: target/dist/EverFlask-*
+          if-no-files-found: error

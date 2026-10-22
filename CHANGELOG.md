@@ -17,6 +17,8 @@
 - `uninstall.sh` prints the manual Accessibility step once and opens the right Settings pane when MacOS no longer recognises the deleted app.
 
 ### Added
+- `packaging/macos/build-release.sh`: universal DMG with SHA-256 checksum, self-verifying (architectures, minimum MacOS, hardened runtime, signature).
+- Release workflow: a version tag builds the DMG and creates a draft GitHub release; manual runs build a dry-run artifact. Build attestations once the repo is public.
 - App icon (red flask on a black rounded square) for Finder, Applications, Spotlight and System Settings, generated from `assets/app-icon/AppIcon.svg` by `scripts/make-app-icon.sh`.
 - `EVERFLASK_DEBUG` diagnostic log (permission status and every nudge decision), off by default.
 - Menu-bar flask that keeps the Mac awake (IOKit power assertions); double-click to toggle.

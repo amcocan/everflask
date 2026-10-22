@@ -1,5 +1,13 @@
 # QA Checklist (MacOS)
 
+## Release build (automated in `build-release.sh`, verified 2026-10-21)
+- [x] Universal binary: `arm64` and `x86_64`, minimum MacOS 11.0 on both
+- [x] Hardened runtime on; signature verifies (`codesign --verify --strict`)
+- [x] DMG contains EverFlask.app and an Applications shortcut; checksum verifies
+- [x] Gatekeeper rejects it (expected: unsigned by decision; README → Installing)
+- [x] Release copy: launches empty, no assertions; single instance; DYLD injection blocked; no network symbols
+- [ ] On a second Mac or user account: download from GitHub, Open Anyway flow works as the README describes
+
 - [ ] Toggle on: `pmset -g assertions` shows the EverFlask assertion
 - [ ] Toggle off: assertion gone
 - [ ] Icon matches state in light and dark menu bar
