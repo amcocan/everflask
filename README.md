@@ -1,4 +1,7 @@
-<h1><img src="assets/app-icon/AppIcon-256.png" alt="" width="56" align="middle"> EverFlask</h1>
+<p align="center">
+  <img src="assets/app-icon/AppIcon-512.png" alt="" width="224">
+</p>
+<h1 align="center">EverFlask</h1>
 
 A tiny menu-bar app that keeps your computer awake and keeps chat apps from showing you as Away. A potion flask next to the clock shows the state:
 
