@@ -84,6 +84,20 @@ The keep-chat-apps-Active check is a manual test because it needs the Accessibil
 
     cargo test -p everflask-platform --test macos_activity -- --ignored
 
+## Developing
+
+**Every rebuild of the dev bundle loses the Accessibility grant.** Dev builds are ad-hoc signed, so MacOS identifies them by a hash of their code, and each rebuild looks like a new app. Settings may still show EverFlask switched on, but the grant no longer applies, and MacOS won't prompt again. To re-grant after a rebuild:
+
+    for s in Accessibility PostEvent; do tccutil reset $s io.github.amcocan.everflask; done
+
+Then fill the flask, allow the prompt, and relaunch EverFlask. Signed releases don't have this problem.
+
+To see what EverFlask is doing, launch it with the diagnostic log:
+
+    open --env EVERFLASK_DEBUG=1 --stderr /tmp/everflask.log target/debug/Everflask.app
+
+The log records whether the permission is active, and each minute whether a nudge was needed and sent.
+
 ## Layout
 - `crates/everflask-core`: state, double-click detection and nudge scheduling (no OS code)
 - `crates/everflask-platform`: per-OS keep-awake and activity backends

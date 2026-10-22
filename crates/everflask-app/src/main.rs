@@ -32,6 +32,16 @@ const IDLE_THRESHOLD: Duration = Duration::from_secs(45);
 const LIQUID: Liquid = Liquid::Red;
 const OFF_STYLE: OffStyle = OffStyle::Grey;
 
+/// Diagnostic log to stderr, only when `EVERFLASK_DEBUG` is set. Launch with
+/// `open --env EVERFLASK_DEBUG=1 --stderr <file> Everflask.app`.
+macro_rules! debug_log {
+    ($($arg:tt)*) => {
+        if std::env::var_os("EVERFLASK_DEBUG").is_some() {
+            eprintln!("everflask[debug]: {}", format!($($arg)*));
+        }
+    };
+}
+
 enum UserEvent {
     Tray(TrayIconEvent),
     Menu(MenuEvent),
@@ -127,6 +137,7 @@ fn main() {
     // user granted Accessibility. Without it, full means keep-awake only.
     let mut nudger = Nudger::new(NUDGE_INTERVAL);
     let mut can_simulate = has_activity_permission();
+    debug_log!("started; Accessibility permission granted: {can_simulate}");
     let mut tray: Option<TrayIcon> = None;
 
     event_loop.run(move |event, _, control_flow| {
@@ -165,9 +176,19 @@ fn main() {
                 if nudger.poll(Instant::now()) =>
             {
                 let idle = Duration::from_secs_f64(seconds_since_input().max(0.0));
+                debug_log!(
+                    "tick: idle {:.1}s, nudge needed: {}",
+                    idle.as_secs_f64(),
+                    needs_nudge(idle, IDLE_THRESHOLD)
+                );
                 if needs_nudge(idle, IDLE_THRESHOLD) {
                     let ok = match nudge_activity() {
-                        Ok(()) => true,
+                        Ok(()) => {
+                            // Idle time resets once MacOS processes the event, so the
+                            // next tick (not this one) shows the effect.
+                            debug_log!("nudged");
+                            true
+                        }
                         Err(e) => {
                             eprintln!("everflask: activity nudge failed: {e}");
                             e != ActivityError::NoPermission
@@ -205,6 +226,7 @@ fn main() {
                         // Shows the MacOS prompt the first time only; later
                         // calls just report the current answer.
                         can_simulate = request_activity_permission();
+                        debug_log!("requested permission; granted: {can_simulate}");
                     }
                 }
                 Err(e) => eprintln!("everflask: could not switch to {next:?}: {e}"),
