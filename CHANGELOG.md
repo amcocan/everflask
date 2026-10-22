@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-### Known issues (to fix next)
+## 0.1.0 - 2026-10-21
+
+First release. MacOS 11 or later, Apple Silicon and Intel.
+
+### Known issues
 - **Dev builds lose the Accessibility grant on every rebuild.** Ad-hoc signing identifies the app by code hash, so each rebuild (including `scripts/security-check.sh`) looks like a new app. The stale entry also stops MacOS from prompting again. Workaround: see "Developing" in the README. Releases are unsigned by decision, so this stays; `dev-bundle.sh` clears the stale grant on each build.
 
 ### Fixed
