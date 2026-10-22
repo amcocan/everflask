@@ -12,8 +12,8 @@ use std::time::{Duration, Instant};
 use everflask_core::{needs_nudge, DoubleClickDetector, KeepAwake, Nudger, State};
 use everflask_platform::macos::uninstall::{self, BUNDLE_ID};
 use everflask_platform::macos::{
-    has_activity_permission, nudge_activity, request_activity_permission, seconds_since_input,
-    ActivityError, MacKeepAwake,
+    activity_permission, nudge_activity, open_accessibility_settings, request_activity_permission,
+    seconds_since_input, ActivityPermission, MacKeepAwake,
 };
 use icon::{Liquid, OffStyle};
 use tao::event::{Event, StartCause};
@@ -47,13 +47,13 @@ enum UserEvent {
     Menu(MenuEvent),
 }
 
-fn tooltip(state: State, can_simulate: bool) -> &'static str {
-    match (state, can_simulate) {
-        (State::Full, true) => "EverFlask: keeping awake and active",
-        (State::Full, false) => {
-            "EverFlask: keeping awake. Allow Accessibility (then relaunch) to stay Active in chat apps"
+fn tooltip(state: State, permission: ActivityPermission) -> &'static str {
+    match (state, permission) {
+        (State::Empty, _) => "EverFlask: Off.",
+        (State::Full, ActivityPermission::Active) => "EverFlask: Keeping awake and active.",
+        (State::Full, ActivityPermission::NotGranted) => {
+            "EverFlask: Keeping awake. Allow Accessibility to stay Active in chat apps."
         }
-        (State::Empty, _) => "EverFlask: off",
     }
 }
 
@@ -122,9 +122,12 @@ fn main() {
 
     let menu = Menu::new();
     let toggle_item = MenuItem::new("Toggle", true, None);
+    // Shown only while the permission isn't active (see `redraw` below).
+    let allow_item = MenuItem::new("Allow Accessibility", true, None);
     let uninstall_item = MenuItem::new("Uninstall EverFlask…", true, None);
     let quit_item = MenuItem::new("Quit EverFlask", true, None);
     menu.append(&toggle_item).expect("append menu item");
+    menu.append(&allow_item).expect("append menu item");
     menu.append(&PredefinedMenuItem::separator())
         .expect("append menu item");
     menu.append(&uninstall_item).expect("append menu item");
@@ -136,9 +139,10 @@ fn main() {
     // Nudges run only while the flask is full, and only post input if the
     // user granted Accessibility. Without it, full means keep-awake only.
     let mut nudger = Nudger::new(NUDGE_INTERVAL);
-    let mut can_simulate = has_activity_permission();
-    debug_log!("started; Accessibility permission granted: {can_simulate}");
+    let mut permission = activity_permission();
+    debug_log!("started; Accessibility: {permission:?}");
     let mut tray: Option<TrayIcon> = None;
+    let mut allow_shown = true;
 
     event_loop.run(move |event, _, control_flow| {
         let mut toggle = false;
@@ -168,6 +172,11 @@ fn main() {
                 ..
             })) => toggle = true,
             Event::UserEvent(UserEvent::Menu(e)) if e.id == *toggle_item.id() => toggle = true,
+            Event::UserEvent(UserEvent::Menu(e)) if e.id == *allow_item.id() => {
+                open_accessibility_settings();
+                permission = activity_permission();
+                redraw = true;
+            }
             Event::UserEvent(UserEvent::Menu(e)) if e.id == *uninstall_item.id() => {
                 uninstall(&mut awake, &mut nudger);
             }
@@ -175,28 +184,23 @@ fn main() {
             Event::NewEvents(StartCause::ResumeTimeReached { .. })
                 if nudger.poll(Instant::now()) =>
             {
+                let now_permission = activity_permission();
+                if now_permission != permission {
+                    debug_log!("Accessibility: {permission:?} -> {now_permission:?}");
+                    permission = now_permission;
+                    redraw = true;
+                }
                 let idle = Duration::from_secs_f64(seconds_since_input().max(0.0));
+                let needed = needs_nudge(idle, IDLE_THRESHOLD);
                 debug_log!(
-                    "tick: idle {:.1}s, nudge needed: {}",
-                    idle.as_secs_f64(),
-                    needs_nudge(idle, IDLE_THRESHOLD)
+                    "tick: idle {:.1}s, nudge needed: {needed}",
+                    idle.as_secs_f64()
                 );
-                if needs_nudge(idle, IDLE_THRESHOLD) {
-                    let ok = match nudge_activity() {
-                        Ok(()) => {
-                            // Idle time resets once MacOS processes the event, so the
-                            // next tick (not this one) shows the effect.
-                            debug_log!("nudged");
-                            true
-                        }
-                        Err(e) => {
-                            eprintln!("everflask: activity nudge failed: {e}");
-                            e != ActivityError::NoPermission
-                        }
-                    };
-                    // Permission revoked (or granted): keep the tooltip honest.
-                    redraw |= ok != can_simulate;
-                    can_simulate = ok;
+                if needed {
+                    match nudge_activity() {
+                        Ok(()) => debug_log!("nudged"),
+                        Err(e) => debug_log!("nudge skipped: {e}"),
+                    }
                 }
             }
             _ => {}
@@ -222,11 +226,12 @@ fn main() {
                     state = next;
                     redraw = true;
                     println!("everflask: {state:?}");
-                    if state == State::Full && !can_simulate {
+                    if state == State::Full && permission == ActivityPermission::NotGranted {
                         // Shows the MacOS prompt the first time only; later
                         // calls just report the current answer.
-                        can_simulate = request_activity_permission();
-                        debug_log!("requested permission; granted: {can_simulate}");
+                        request_activity_permission();
+                        permission = activity_permission();
+                        debug_log!("requested permission; now {permission:?}");
                     }
                 }
                 Err(e) => eprintln!("everflask: could not switch to {next:?}: {e}"),
@@ -240,9 +245,22 @@ fn main() {
         }
 
         if redraw {
+            // Right after Toggle, the item it relates to.
+            let want_allow = permission != ActivityPermission::Active;
+            if want_allow != allow_shown {
+                let result = if want_allow {
+                    menu.insert(&allow_item, 1)
+                } else {
+                    menu.remove(&allow_item)
+                };
+                match result {
+                    Ok(()) => allow_shown = want_allow,
+                    Err(e) => eprintln!("everflask: could not update menu: {e}"),
+                }
+            }
             if let Some(tray) = &tray {
                 menubar::set_flask(tray, icon::flask(state, LIQUID, OFF_STYLE));
-                let _ = tray.set_tooltip(Some(tooltip(state, can_simulate)));
+                let _ = tray.set_tooltip(Some(tooltip(state, permission)));
             }
         }
 

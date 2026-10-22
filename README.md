@@ -41,10 +41,11 @@ EverFlask uses the permission for that one mouse-move event and nothing else. It
 
 1. Fill the flask. The first time, MacOS asks whether EverFlask may control your computer.
 2. Open **System Settings → Privacy & Security → Accessibility** and switch **EverFlask** on.
-3. **Quit and relaunch EverFlask.** MacOS only applies the new permission when the app next starts.
-4. Fill the flask again. Hover over it to check: the tooltip says **keeping awake and active**. If it asks you to allow Accessibility instead, the permission isn't active yet.
+3. Within a minute, the tooltip changes to **Keeping awake and active**. There's no need to relaunch.
 
-To take the permission back, switch EverFlask off in the same Settings pane. EverFlask goes back to keep-awake only.
+If MacOS doesn't ask (it asks only once per app, and never again after **Don't Allow**), right-click the flask and choose **Allow Accessibility**. It opens the right Settings pane directly.
+
+To take the permission back, switch EverFlask off in the same Settings pane. EverFlask goes back to keep-awake only, and the tooltip says so within a minute.
 
 ## Uninstalling
 
@@ -86,11 +87,7 @@ The keep-chat-apps-Active check is a manual test because it needs the Accessibil
 
 ## Developing
 
-**Every rebuild of the dev bundle loses the Accessibility grant.** Dev builds are ad-hoc signed, so MacOS identifies them by a hash of their code, and each rebuild looks like a new app. Settings may still show EverFlask switched on, but the grant no longer applies, and MacOS won't prompt again. To re-grant after a rebuild:
-
-    for s in Accessibility PostEvent; do tccutil reset $s io.github.amcocan.everflask; done
-
-Then fill the flask, allow the prompt, and relaunch EverFlask. Signed releases don't have this problem.
+**Every rebuild of the dev bundle loses the Accessibility grant.** Dev builds are ad-hoc signed, so MacOS identifies them by a hash of their code, and each rebuild looks like a new app. `packaging/macos/dev-bundle.sh` therefore clears EverFlask's stale entry (and quits any running copy) on every build. After launching the new build, fill the flask and allow access, or use **Allow Accessibility** if MacOS doesn't prompt. It prompts only once per app; to see the prompt again, also clear MacOS's "warning shown" records with `sh packaging/macos/uninstall.sh` (this also removes the app's preferences), then rebuild. Signed releases don't lose the grant on update.
 
 To see what EverFlask is doing, launch it with the diagnostic log:
 

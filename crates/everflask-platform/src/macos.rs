@@ -157,8 +157,37 @@ impl fmt::Display for ActivityError {
 impl std::error::Error for ActivityError {}
 
 /// Whether EverFlask may post input events. Never prompts.
+///
+/// `CGPreflightPostEventAccess` alone isn't enough: MacOS caches its answer
+/// per process, so it keeps saying no after the user grants access until the
+/// app relaunches, even though posted events already work (verified: the
+/// idle timer resets). `AXIsProcessTrusted` updates live, so either counts.
 pub fn has_activity_permission() -> bool {
-    CGPreflightPostEventAccess()
+    CGPreflightPostEventAccess() || is_accessibility_trusted()
+}
+
+/// Accessibility status as the user sees it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ActivityPermission {
+    /// MacOS will accept our input events.
+    Active,
+    NotGranted,
+}
+
+pub fn activity_permission() -> ActivityPermission {
+    if has_activity_permission() {
+        ActivityPermission::Active
+    } else {
+        ActivityPermission::NotGranted
+    }
+}
+
+/// Live Accessibility status: updates as soon as the user flips the switch
+/// in System Settings.
+fn is_accessibility_trusted() -> bool {
+    // SAFETY: takes no arguments and only reads this process's own
+    // Accessibility status.
+    unsafe { objc2_application_services::AXIsProcessTrusted() }
 }
 
 /// Asks macOS for the permission, showing the system prompt if it hasn't
@@ -193,4 +222,20 @@ pub fn seconds_since_input() -> f64 {
         CGEventSourceStateID::CombinedSessionState,
         any_input,
     )
+}
+
+/// Opens System Settings at Privacy & Security → Accessibility. The reliable
+/// path when MacOS won't show its prompt (it shows it only once per app, and
+/// never again after "Don't Allow").
+pub fn open_accessibility_settings() {
+    use objc2_app_kit::NSWorkspace;
+    use objc2_foundation::{NSString, NSURL};
+    // Asking first makes sure EverFlask is listed in the pane (switched off).
+    request_activity_permission();
+    let pane = NSString::from_str(
+        "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+    );
+    if let Some(url) = NSURL::URLWithString(&pane) {
+        NSWorkspace::sharedWorkspace().openURL(&url);
+    }
 }

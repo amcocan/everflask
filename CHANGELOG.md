@@ -7,6 +7,8 @@
 - **Uninstall is untested end to end.** Testing is on hold; see the Uninstall section of `docs/qa-checklist.md`.
 
 ### Fixed
+- Granting Accessibility no longer needs a relaunch. EverFlask also checks `AXIsProcessTrusted`, which updates live; MacOS's cached post-event check kept saying no until restart even though nudges already worked (verified by idle-timer resets before any relaunch).
+- MacOS shows the permission prompt only once per app. Added **Allow Accessibility** to the menu, which opens the right Settings pane.
 - Display name is now "EverFlask" everywhere users see it: Finder, System Settings, the dev bundle (`EverFlask.app`) and the power assertion shown by `pmset`. The bundle ID is unchanged.
 - Keeping chat apps Active appeared broken after being merged into the toggle. Cause: the stale Accessibility grant above, not the merged logic. Verified with a valid grant: nudges fire once idle passes 45 s, system idle time peaked at 59 s, and Teams stayed Available.
 

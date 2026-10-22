@@ -9,7 +9,8 @@
 
 ## Keeping chat apps Active (merged into the toggle)
 - [ ] First fill shows the MacOS Accessibility prompt; "Don't Allow" leaves keep-awake working, and the tooltip says to allow Accessibility
-- [ ] After granting, the tooltip still asks for the permission until EverFlask is relaunched (MacOS applies the grant at next launch)
+- [ ] After granting, the tooltip changes to "Keeping awake and active" within 60 s, without relaunching
+- [ ] If MacOS doesn't prompt, **Allow Accessibility** opens Settings → Privacy & Security → Accessibility with EverFlask listed; it disappears from the menu once access is active and comes back if access is revoked
 - [ ] Granted + full + idle: `ioreg -c IOHIDSystem | grep HIDIdleTime` never passes ~105 s
 - [ ] Granted + full + actively typing: no nudges are posted
 - [ ] Pointer never moves
