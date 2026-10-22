@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/app-icon/AppIcon-512.png" alt="" width="224">
+  <img src="assets/app-icon/AppIcon-512.png" alt="" width="117">
 </p>
 <h1 align="center">EverFlask</h1>
 
