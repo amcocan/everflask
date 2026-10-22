@@ -11,6 +11,7 @@
 - Keeping chat apps Active appeared broken after being merged into the toggle. Cause: the stale Accessibility grant above, not the merged logic. Verified with a valid grant: nudges fire once idle passes 45 s, system idle time peaked at 59 s, and Teams stayed Available.
 
 ### Added
+- App icon (red flask on a black rounded square) for Finder, Applications, Spotlight and System Settings, generated from `assets/app-icon/AppIcon.svg` by `scripts/make-app-icon.sh`.
 - `EVERFLASK_DEBUG` diagnostic log (permission status and every nudge decision), off by default.
 - Menu-bar flask that keeps the Mac awake (IOKit power assertions); double-click to toggle.
 - Designed flask artwork with instant light/dark menu-bar switching.

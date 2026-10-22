@@ -102,7 +102,8 @@ The log records whether the permission is active, and each minute whether a nudg
 - `crates/everflask-core`: state, double-click detection and nudge scheduling (no OS code)
 - `crates/everflask-platform`: per-OS keep-awake and activity backends
 - `crates/everflask-app`: menu-bar icon and event loop
-- `assets/icons`: icon sources (SVG) and the design file
+- `assets/icons`: menu-bar icon sources (SVG) and the design file
+- `assets/app-icon`: app icon source; run `scripts/make-app-icon.sh` after editing it
 - `packaging`: per-OS bundle files
 - `docs`: threat model and QA checklist
 

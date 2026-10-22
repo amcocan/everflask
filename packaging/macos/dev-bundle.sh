@@ -7,8 +7,9 @@ cd "$(dirname "$0")/../.."
 cargo build -p everflask
 APP=target/debug/EverFlask.app
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp packaging/macos/Info.plist "$APP/Contents/"
+cp packaging/macos/AppIcon.icns "$APP/Contents/Resources/"
 cp target/debug/everflask "$APP/Contents/MacOS/"
 # Hardened runtime: MacOS ignores DYLD_* injection, so injected code
 # can never inherit the Accessibility grant.
