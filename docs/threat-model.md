@@ -39,7 +39,14 @@ Living document. Update it whenever a change adds a permission, an input, an out
 | T15 | Synthetic input interferes with real use (e.g. a move event mid-drag) | Nudges only after 45 s of real idle time, so never while the user is working | Done |
 | T13 | A tampered or vulnerable dependency, or a moved CI action tag | `cargo audit` + `cargo deny` in CI; actions pinned to commit SHAs; CI token read-only; checkout doesn't keep credentials | Done |
 
+## Decision: unsigned releases
+EverFlask ships without an Apple Developer ID signature or notarization (decided 2026-10-21). Users can build from source or use the pre-built releases. Consequences, accepted:
+- Gatekeeper warns on first launch; users must use **Open Anyway** (README → Installing).
+- T1/T8: a downloaded copy's origin can't be verified by signature. Mitigation: SHA-256 checksums and GitHub build attestations on every release; building from source is documented.
+- Each update loses the Accessibility grant (the ad-hoc signature is a code hash).
+- The hardened runtime (T10) is still applied: ad-hoc signing supports it.
+
 ## Known gaps
-- Releases aren't signed or notarized yet (T1, T8). Release signing must keep the hardened runtime (T10).
+- Releases are unsigned by decision (above). The release build must still keep the hardened runtime (T10) and publish checksums and attestations.
 - `cargo deny` checks only the Mac targets. The Linux tray stack (GTK) brings in RUSTSEC-2024-0370 (unmaintained) and RUSTSEC-2024-0429 (unsound); deal with them when the Linux port starts.
 - The manual activity test must run from a properly bundled, signed `.app` to validate TCC behaviour end to end.

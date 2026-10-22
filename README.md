@@ -20,6 +20,22 @@ Status: early development. MacOS first; Windows and Linux later.
 >
 > If you'd rather not grant the permission, click **Don't Allow**. EverFlask still keeps your Mac awake, but chat apps may show you as Away.
 
+## Installing
+
+EverFlask is open source and **isn't signed with an Apple Developer ID**, so MacOS will warn you the first time you open it. You have two options:
+
+**Download a release.** Each update has a pre-built copy on the [Releases](https://github.com/amcocan/everflask/releases) page.
+
+1. Download it, open the disk image, and drag **EverFlask** to **Applications**.
+2. Open EverFlask. MacOS says it can't verify the app; click **Done**, not **Move to Trash**.
+3. Go to **System Settings → Privacy & Security**, scroll to the message about EverFlask, and click **Open Anyway**. Confirm with your password.
+
+You only need to do this once per version. Check the download against the SHA-256 checksum published with each release.
+
+**Build it yourself** from this repository (see [Building](#building)). A copy you build on your own Mac opens without the warning.
+
+Because releases aren't signed with a stable identity, **each update counts as a new app** for the Accessibility permission. After updating, use **Allow Accessibility** again; you may need to remove the old EverFlask entry from the list first.
+
 ## How it keeps chat apps Active
 
 Chat apps decide you're Away when the Mac's idle timer (time since your last keyboard or mouse input) passes their limit, usually 5 minutes. While the flask is full, EverFlask checks the idle timer once a minute. **Only if you've been idle for 45 seconds or more**, it posts one mouse-move event to the pointer's current position. The pointer doesn't move. MacOS counts it as input, which resets the idle timer.

@@ -10,13 +10,12 @@ pkill -x everflask 2>/dev/null
 # Permissions. tccutil only works while MacOS can still find the app, so
 # this runs before the app is trashed. Never call it without an ID: that
 # would reset the permission for every app on the Mac.
+PERM_LEFT=0
 for svc in Accessibility PostEvent; do
     if /usr/bin/tccutil reset "$svc" "$ID" >/dev/null 2>&1; then
         echo "Reset $svc permission"
     else
-        echo "Could not reset $svc permission (app not found). If EverFlask is"
-        echo "  still listed in System Settings > Privacy & Security > Accessibility,"
-        echo "  select it and click the minus button."
+        PERM_LEFT=1
     fi
 done
 
@@ -49,5 +48,13 @@ for app in /Applications/EverFlask.app "$HOME/Applications/EverFlask.app"; do
             echo "Moved $app to the Trash"
     fi
 done
+
+if [ "$PERM_LEFT" -eq 1 ]; then
+    echo
+    echo "One step left: MacOS no longer recognises EverFlask (it was deleted"
+    echo "first), so its Accessibility entry can't be removed automatically."
+    echo "Opening System Settings: select EverFlask in the list and click the minus (-) button."
+    /usr/bin/open "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+fi
 
 echo "Done."
