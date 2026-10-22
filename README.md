@@ -114,6 +114,8 @@ To build the same DMG locally: `./packaging/macos/build-release.sh` (output in `
 
 **Every rebuild of the dev bundle loses the Accessibility grant.** Dev builds are ad-hoc signed, so MacOS identifies them by a hash of their code, and each rebuild looks like a new app. `packaging/macos/dev-bundle.sh` therefore clears EverFlask's stale entry (and quits any running copy) on every build. After launching the new build, fill the flask and allow access, or use **Allow Accessibility** if MacOS doesn't prompt. It prompts only once per app; to see the prompt again, also clear MacOS's "warning shown" records with `sh packaging/macos/uninstall.sh` (this also removes the app's preferences), then rebuild. Signed releases don't lose the grant on update.
 
+If System Settings or Finder shows a blank icon for EverFlask, another copy with the same bundle ID (often one in the Trash) is confusing MacOS. Empty the Trash, rebuild, then quit and reopen System Settings.
+
 To see what EverFlask is doing, launch it with the diagnostic log:
 
     open --env EVERFLASK_DEBUG=1 --stderr /tmp/everflask.log target/debug/EverFlask.app

@@ -22,5 +22,9 @@ pkill -x everflask 2>/dev/null || true
 for svc in Accessibility PostEvent; do
     /usr/bin/tccutil reset "$svc" io.github.amcocan.everflask >/dev/null 2>&1 || true
 done
+# Re-register this build so Finder and System Settings use its icon and not
+# a stale record from another copy with the same bundle ID (an old build,
+# the release build in target/dist, a copy in the Trash).
+/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -f "$APP"
 echo "Cleared EverFlask's Accessibility grant (rebuilds invalidate it); allow it again after launching." >&2
 echo "$APP"
