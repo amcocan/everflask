@@ -1,4 +1,4 @@
-# EverFlask
+<h1><img src="assets/app-icon/AppIcon-256.png" alt="" width="56" align="middle"> EverFlask</h1>
 
 A tiny menu-bar app that keeps your computer awake and keeps chat apps from showing you as Away. A potion flask next to the clock shows the state:
 
@@ -128,6 +128,7 @@ The log records whether the permission is active, and each minute whether a nudg
 - `crates/everflask-app`: menu-bar icon and event loop
 - `assets/icons`: menu-bar icon sources (SVG) and the design file
 - `assets/app-icon`: app icon source; run `scripts/make-app-icon.sh` after editing it
+- `assets/social-preview.svg`: the repo's link-preview card; the regenerate command is in the file
 - `packaging`: per-OS bundle files
 - `docs`: threat model and QA checklist
 
