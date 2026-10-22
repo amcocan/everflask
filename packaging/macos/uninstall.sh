@@ -1,6 +1,6 @@
 #!/bin/sh
 # Removes EverFlask and everything it leaves behind. Use this if EverFlask
-# was already deleted; otherwise prefer "Uninstall EverFlask..." in the menu.
+# was already deleted; otherwise prefer "Uninstall EverFlask" in the menu.
 # Mirrors crates/everflask-platform/src/macos/uninstall.rs; keep them in sync.
 set -u
 ID=io.github.amcocan.everflask

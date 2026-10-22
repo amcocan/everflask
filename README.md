@@ -67,7 +67,7 @@ To take the permission back, switch EverFlask off in the same Settings pane. Eve
 
 Dragging an app to the Trash leaves its settings and permissions behind, because MacOS runs no code when you delete an app. To remove EverFlask completely:
 
-**Right-click the flask → Uninstall EverFlask…** and confirm. EverFlask then:
+**Right-click the flask → Uninstall EverFlask** and confirm. EverFlask then:
 
 1. Removes its Accessibility permission.
 2. Deletes its preferences and its entries in MacOS's permission-warning records.

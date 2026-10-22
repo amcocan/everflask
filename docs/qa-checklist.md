@@ -31,7 +31,7 @@
 - [ ] Launching EverFlask again while it runs doesn't add a second flask
 
 ## Uninstall
-- [ ] Menu → Uninstall EverFlask… → Cancel changes nothing
+- [ ] Menu → Uninstall EverFlask → Cancel changes nothing
 - [ ] Confirm: app is in the Trash; EverFlask is gone from Settings → Accessibility
 - [ ] `~/Library/Preferences/io.github.amcocan.everflask.plist` doesn't exist
 - [ ] `defaults read com.apple.universalaccessAuthWarning` has no EverFlask keys and still has every other key

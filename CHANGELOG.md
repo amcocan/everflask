@@ -24,7 +24,7 @@
 - Menu-bar flask that keeps the Mac awake (IOKit power assertions); double-click to toggle.
 - Designed flask artwork with instant light/dark menu-bar switching.
 - Keeping chat apps Active while full (zero-distance mouse move after 45 s idle; needs Accessibility).
-- Uninstall EverFlask… menu item and `packaging/macos/uninstall.sh`.
+- Uninstall EverFlask menu item and `packaging/macos/uninstall.sh`.
 - Single-instance enforcement.
 - `scripts/security-check.sh`, threat model, QA checklist.
 

@@ -1,7 +1,7 @@
 //! Removes everything EverFlask leaves on a Mac.
 //!
 //! MacOS has no uninstall hook: dragging an app to the Trash runs no code.
-//! So EverFlask offers "Uninstall EverFlask..." in its menu, and
+//! So EverFlask offers "Uninstall EverFlask" in its menu, and
 //! `packaging/macos/uninstall.sh` does the same job if the app is already
 //! gone. Keep the two in sync.
 //!

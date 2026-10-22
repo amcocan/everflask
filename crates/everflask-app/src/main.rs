@@ -124,7 +124,7 @@ fn main() {
     let toggle_item = MenuItem::new("Toggle", true, None);
     // Shown only while the permission isn't active (see `redraw` below).
     let allow_item = MenuItem::new("Allow Accessibility", true, None);
-    let uninstall_item = MenuItem::new("Uninstall EverFlask…", true, None);
+    let uninstall_item = MenuItem::new("Uninstall EverFlask", true, None);
     let quit_item = MenuItem::new("Quit EverFlask", true, None);
     menu.append(&toggle_item).expect("append menu item");
     menu.append(&allow_item).expect("append menu item");
