@@ -94,7 +94,7 @@ Then fill the flask, allow the prompt, and relaunch EverFlask. Signed releases d
 
 To see what EverFlask is doing, launch it with the diagnostic log:
 
-    open --env EVERFLASK_DEBUG=1 --stderr /tmp/everflask.log target/debug/Everflask.app
+    open --env EVERFLASK_DEBUG=1 --stderr /tmp/everflask.log target/debug/EverFlask.app
 
 The log records whether the permission is active, and each minute whether a nudge was needed and sent.
 

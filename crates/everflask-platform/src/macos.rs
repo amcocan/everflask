@@ -17,7 +17,7 @@ const K_IOPM_ASSERTION_LEVEL_ON: u32 = 255;
 const K_IO_RETURN_SUCCESS: IOReturn = 0;
 
 /// Name shown in `pmset -g assertions`.
-pub const ASSERTION_NAME: &str = "Everflask: keeping awake";
+pub const ASSERTION_NAME: &str = "EverFlask: keeping awake";
 
 /// Display sleep also blocks idle system sleep; we hold both so intent is
 /// explicit and survives any future change in that coupling.
@@ -126,7 +126,7 @@ impl Drop for MacKeepAwake {
 
 // --- Activity simulation -------------------------------------------------
 //
-// The only input Everflask ever sends: a mouse-move event to the pointer's
+// The only input EverFlask ever sends: a mouse-move event to the pointer's
 // current position. Nothing moves on screen, but macOS counts it as user
 // input, which resets the idle timers chat apps use for "Away".
 // Requires the Accessibility permission (System Settings > Privacy &
@@ -156,7 +156,7 @@ impl fmt::Display for ActivityError {
 
 impl std::error::Error for ActivityError {}
 
-/// Whether Everflask may post input events. Never prompts.
+/// Whether EverFlask may post input events. Never prompts.
 pub fn has_activity_permission() -> bool {
     CGPreflightPostEventAccess()
 }

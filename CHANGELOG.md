@@ -5,9 +5,9 @@
 ### Known issues (to fix next)
 - **Dev builds lose the Accessibility grant on every rebuild.** Ad-hoc signing identifies the app by code hash, so each rebuild (including `scripts/security-check.sh`) looks like a new app. The stale entry also stops MacOS from prompting again. Workaround: see "Developing" in the README. Fix: sign dev builds with a stable identity (Apple Development certificate or a self-signed one).
 - **Uninstall is untested end to end.** Testing is on hold; see the Uninstall section of `docs/qa-checklist.md`.
-- **`Info.plist` still uses the display name "Everflask"** while the docs say "EverFlask". Changing it means granting Accessibility again.
 
 ### Fixed
+- Display name is now "EverFlask" everywhere users see it: Finder, System Settings, the dev bundle (`EverFlask.app`) and the power assertion shown by `pmset`. The bundle ID is unchanged.
 - Keeping chat apps Active appeared broken after being merged into the toggle. Cause: the stale Accessibility grant above, not the merged logic. Verified with a valid grant: nudges fire once idle passes 45 s, system idle time peaked at 59 s, and Teams stayed Available.
 
 ### Added

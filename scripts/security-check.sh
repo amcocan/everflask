@@ -4,7 +4,7 @@
 # EverFlask first. Exits non-zero if any check fails.
 set -u
 cd "$(dirname "$0")/.."
-APP=target/debug/Everflask.app
+APP=target/debug/EverFlask.app
 BIN=$APP/Contents/MacOS/everflask
 TMP=$(mktemp -d)
 trap 'pkill -x everflask 2>/dev/null; rm -rf "$TMP"' EXIT

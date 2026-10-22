@@ -33,7 +33,7 @@ const LIQUID: Liquid = Liquid::Red;
 const OFF_STYLE: OffStyle = OffStyle::Grey;
 
 /// Diagnostic log to stderr, only when `EVERFLASK_DEBUG` is set. Launch with
-/// `open --env EVERFLASK_DEBUG=1 --stderr <file> Everflask.app`.
+/// `open --env EVERFLASK_DEBUG=1 --stderr <file> EverFlask.app`.
 macro_rules! debug_log {
     ($($arg:tt)*) => {
         if std::env::var_os("EVERFLASK_DEBUG").is_some() {
